@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <div class="container mt-4">
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h2 class="card-title mb-0">{{ task.title }}</h2>
+          </div>
+          <div class="card-body">
+            <p class="card-text"><strong>Descripción:</strong> {{ task.description|default_if_none:"No description provided." }}</p>
+            <p class="card-text"><strong>Prioridad:</strong> 
+              {% if task.priority == 'high' %}
+                <span class="badge bg-danger">High</span>
+              {% elif task.priority == 'medium' %}
+                <span class="badge bg-warning text-dark">Medium</span>
+              {% else %}
+                <span class="badge bg-success">Low</span>
+              {% endif %}
+            </p>
+            <p class="card-text"><strong>Estado:</strong> 
+              {% if task.status == 'pending' %}
+                <span class="badge bg-secondary">Pending</span>
+              {% elif task.status == 'in_progress' %}
+                <span class="badge bg-primary">In Progress</span>
+              {% else %}
+                <span class="badge bg-success">Completed</span>
+              {% endif %}
+            </p>
+            <p class="card-text"><strong>Categoría:</strong> 
+              {% if task.category %}
+                <span class="badge bg-{{ task.category.color }}">{{ task.category.name }}</span>
+              {% else %}
+                <span class="badge bg-secondary">Sin Categoría</span>
+              {% endif %}
+            </p>
+            <p class="card-text"><strong>Fecha de Creación:</strong> {{ task.created_date|date:"d M Y H:i" }}</p>
+            <p class="card-text"><strong>Fecha de Vencimiento:</strong> {% if task.due_date %}{{ task.due_date|date:"d M Y" }}{% else %}No especificada{% endif %}</p>
+            <p class="card-text"><strong>Asignado a:</strong> {{ task.user.username }}</p>
+            <hr>
+            <div class="d-flex justify-content-end">
+              <a href="{% url 'task_update' task.pk %}" class="btn btn-warning me-2">Editar Tarea</a>
+              <a href="{% url 'task_delete' task.pk %}" class="btn btn-danger">Eliminar Tarea</a>
+            </div>
+          </div>
+        </div>
+
+        <h3>Comentarios</h3>
+        <div class="card mb-4">
+          <div class="card-body">
+            {% if comments %}
+              <ul class="list-group list-group-flush">
+                {% for comment in comments %}
+                  <li class="list-group-item">
+                    <small class="text-muted">{{ comment.author.username }} - {{ comment.created_date|date:"d M Y H:i" }}</small>
+                    <p>{{ comment.text }}</p>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p>No hay comentarios aún. Sé el primero en comentar!</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <h3>Añadir Comentario</h3>
+        <div class="card mb-4">
+          <div class="card-body">
+            <form method="POST" action="{% url 'task_detail' task.pk %}">
+              {% csrf_token %}
+              {{ form|crispy }}
+              <button type="submit" class="btn btn-success mt-3">Añadir Comentario</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endblock %}
